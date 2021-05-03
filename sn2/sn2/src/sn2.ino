@@ -6,8 +6,11 @@ SYSTEM_MODE(SEMI_AUTOMATIC);
 #include "math.h"
 
 #define TEMP_PIN A1
-#define MOTION_PIN D8
+#define MOTION_PIN D4
 #define LIGHT_PIN A5
+#define MIC_PIN A0
+#define MOTION_LED_ON D6
+#define MOTION_LED_OFF D5
 
 void onDataReceived(const uint8_t* data, size_t len, const BlePeerDevice& peer, void* context);
 
@@ -52,18 +55,37 @@ double readLight()
 
 double readTemp()
 {
-    int tmpReading = analogRead(TEMP_PIN);
-    return 97.795* log(tmpReading) -4.1948;
+    return analogRead(TEMP_PIN);
+    //return 97.795* log(tmpReading) -4.1948;
 }
 
 int readMotion()
 {
     return digitalRead(MOTION_PIN);
+
+        if (MOTION_PIN == HIGH)
+        {
+            digitalWrite(MOTION_LED_ON, HIGH); //turn green LED on
+            digitalWrite(MOTION_LED_OFF, LOW);
+        }
+        else
+        {
+            digitalWrite(MOTION_LED_OFF, HIGH); //turn red LED on
+            digitalWrite(MOTION_LED_ON, LOW);
+        }
 }
 
+int readMic()
+{
+    return analogRead(MIC_PIN);
+}
 void loop() 
 {
     String message = "SN2: \n";
+
+    message += "Microphone: ";
+    message.concat(readMic());
+    message += " ADC\n";
 
     message += "Light: ";
     message.concat(readLight());
@@ -73,19 +95,23 @@ void loop()
     message.concat(readTemp());
     message += " C\n";
 
-    int motion = readMotion();
+    
+    message += "Motion: ";
+    message.concat(readMotion());
+    message += "\n";
+    //int motion = readMotion();
 
-    if(motion == 1)
+    /*if(motion == 1)
     {
         message += "Motion detected!\n";
     }
     else
     {
         message += "No motion detected.\n";
-    }
+    }*/
 
     if (BLE.connected()) {
         txCharacteristic.setValue(message);
     }
-    delay(1000);
+    delay(2000);
 }

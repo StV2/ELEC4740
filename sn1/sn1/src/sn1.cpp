@@ -109,5 +109,5 @@ void loop()
 
         txCharacteristic.setValue(message);
     }
-    delay(1000);
+    delay(2000);
 }
